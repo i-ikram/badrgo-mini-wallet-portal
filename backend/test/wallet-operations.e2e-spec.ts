@@ -40,7 +40,7 @@ describe('Wallet Operations (e2e)', () => {
         email: 'jane.doe@example.com',
       })
       .expect(201);
-    
+
     const userId = userRes.body.id;
     expect(userId).toBeDefined();
 
@@ -52,7 +52,7 @@ describe('Wallet Operations (e2e)', () => {
         currency: 'USD',
       })
       .expect(201);
-    
+
     const walletId = walletRes.body.id;
     expect(walletId).toBeDefined();
     expect(walletRes.body.balance).toBe(0);
@@ -66,7 +66,7 @@ describe('Wallet Operations (e2e)', () => {
         description: 'Initial deposit',
       })
       .expect(201);
-    
+
     expect(creditRes.body.amount).toBe(2500);
     expect(creditRes.body.balanceBefore).toBe(0);
     expect(creditRes.body.balanceAfter).toBe(2500);
@@ -85,7 +85,7 @@ describe('Wallet Operations (e2e)', () => {
         description: 'Buy coffee',
       })
       .expect(201);
-    
+
     expect(debitRes.body.amount).toBe(1000);
     expect(debitRes.body.balanceBefore).toBe(2500);
     expect(debitRes.body.balanceAfter).toBe(1500);
@@ -124,7 +124,9 @@ describe('Wallet Operations (e2e)', () => {
       .expect(409);
 
     // Verify balance was only deducted once
-    const updatedWallet = await prisma.wallet.findUnique({ where: { id: wallet.id } });
+    const updatedWallet = await prisma.wallet.findUnique({
+      where: { id: wallet.id },
+    });
     expect(updatedWallet?.balance).toBe(4000);
   });
 
@@ -150,7 +152,9 @@ describe('Wallet Operations (e2e)', () => {
     expect(res.body.message).toBe('Insufficient funds');
 
     // Verify balance unchanged
-    const updatedWallet = await prisma.wallet.findUnique({ where: { id: wallet.id } });
+    const updatedWallet = await prisma.wallet.findUnique({
+      where: { id: wallet.id },
+    });
     expect(updatedWallet?.balance).toBe(500);
   });
 
@@ -172,7 +176,7 @@ describe('Wallet Operations (e2e)', () => {
           amount: 1000,
           referenceId: `concur-ref-${num}`,
           description: `Concurrent debit ${num}`,
-        })
+        }),
     );
 
     const results = await Promise.all(requests);
@@ -189,7 +193,9 @@ describe('Wallet Operations (e2e)', () => {
     });
 
     // Verify remaining balance is exactly 500
-    const updatedWallet = await prisma.wallet.findUnique({ where: { id: wallet.id } });
+    const updatedWallet = await prisma.wallet.findUnique({
+      where: { id: wallet.id },
+    });
     expect(updatedWallet?.balance).toBe(500);
   });
 });

@@ -1,10 +1,20 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { WalletOperationDto } from './dto/wallet-operation.dto';
 import { GetTransactionsDto } from './dto/get-transactions.dto';
-import { Wallet, WalletStatus, Transaction, TransactionType } from '@prisma/client';
+import {
+  Wallet,
+  WalletStatus,
+  Transaction,
+  TransactionType,
+} from '@prisma/client';
 
 @Injectable()
 export class WalletsService {
@@ -57,7 +67,10 @@ export class WalletsService {
    * Credits a wallet with the specified amount.
    * Runs in a transaction to guarantee atomicity.
    */
-  async credit(id: string, operationDto: WalletOperationDto): Promise<Transaction> {
+  async credit(
+    id: string,
+    operationDto: WalletOperationDto,
+  ): Promise<Transaction> {
     const { amount, referenceId, description } = operationDto;
 
     return this.prisma.$transaction(async (tx) => {
@@ -81,7 +94,9 @@ export class WalletsService {
         where: { referenceId },
       });
       if (existingTx) {
-        throw new ConflictException(`Transaction with reference ID ${referenceId} already exists`);
+        throw new ConflictException(
+          `Transaction with reference ID ${referenceId} already exists`,
+        );
       }
 
       // MONEY HANDLING: Avoid floating point errors.
@@ -112,7 +127,10 @@ export class WalletsService {
    * Debits a wallet with the specified amount.
    * Runs in a transaction to guarantee atomicity and prevent overdrafts.
    */
-  async debit(id: string, operationDto: WalletOperationDto): Promise<Transaction> {
+  async debit(
+    id: string,
+    operationDto: WalletOperationDto,
+  ): Promise<Transaction> {
     const { amount, referenceId, description } = operationDto;
 
     return this.prisma.$transaction(async (tx) => {
@@ -136,7 +154,9 @@ export class WalletsService {
         where: { referenceId },
       });
       if (existingTx) {
-        throw new ConflictException(`Transaction with reference ID ${referenceId} already exists`);
+        throw new ConflictException(
+          `Transaction with reference ID ${referenceId} already exists`,
+        );
       }
 
       // BUSINESS RULE: Prevent overdraft (balance cannot become negative).
@@ -171,7 +191,10 @@ export class WalletsService {
   /**
    * Retrieves paginated transaction history for a wallet.
    */
-  async findTransactions(id: string, query: GetTransactionsDto): Promise<Transaction[]> {
+  async findTransactions(
+    id: string,
+    query: GetTransactionsDto,
+  ): Promise<Transaction[]> {
     // Ensure wallet exists
     await this.findOne(id);
 

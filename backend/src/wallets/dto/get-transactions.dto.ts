@@ -10,7 +10,11 @@ export class GetTransactionsDto {
   @Type(() => Number)
   page?: number = 1;
 
-  @ApiPropertyOptional({ example: 10, default: 10, description: 'Number of items per page' })
+  @ApiPropertyOptional({
+    example: 10,
+    default: 10,
+    description: 'Number of items per page',
+  })
   @IsInt()
   @Min(1)
   @IsOptional()

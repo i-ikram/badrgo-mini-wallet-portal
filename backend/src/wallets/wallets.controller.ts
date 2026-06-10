@@ -1,5 +1,20 @@
-import { Controller, Get, Post, Body, Param, UsePipes, ValidationPipe, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UsePipes,
+  ValidationPipe,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { WalletOperationDto } from './dto/wallet-operation.dto';
@@ -40,24 +55,48 @@ export class WalletsController {
   @Post(':id/credit')
   @ApiOperation({ summary: 'Credit funds to a wallet' })
   @ApiParam({ name: 'id', description: 'Wallet ID' })
-  @ApiResponse({ status: 201, description: 'Wallet successfully credited, transaction recorded.' })
-  @ApiResponse({ status: 400, description: 'Invalid input or inactive wallet.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Wallet successfully credited, transaction recorded.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input or inactive wallet.',
+  })
   @ApiResponse({ status: 404, description: 'Wallet not found.' })
-  @ApiResponse({ status: 409, description: 'Idempotency key / Reference ID conflict.' })
+  @ApiResponse({
+    status: 409,
+    description: 'Idempotency key / Reference ID conflict.',
+  })
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
-  credit(@Param('id') id: string, @Body() operationDto: WalletOperationDto): Promise<Transaction> {
+  credit(
+    @Param('id') id: string,
+    @Body() operationDto: WalletOperationDto,
+  ): Promise<Transaction> {
     return this.walletsService.credit(id, operationDto);
   }
 
   @Post(':id/debit')
   @ApiOperation({ summary: 'Debit funds from a wallet' })
   @ApiParam({ name: 'id', description: 'Wallet ID' })
-  @ApiResponse({ status: 201, description: 'Wallet successfully debited, transaction recorded.' })
-  @ApiResponse({ status: 400, description: 'Insufficient funds, invalid input, or inactive wallet.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Wallet successfully debited, transaction recorded.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Insufficient funds, invalid input, or inactive wallet.',
+  })
   @ApiResponse({ status: 404, description: 'Wallet not found.' })
-  @ApiResponse({ status: 409, description: 'Idempotency key / Reference ID conflict.' })
+  @ApiResponse({
+    status: 409,
+    description: 'Idempotency key / Reference ID conflict.',
+  })
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
-  debit(@Param('id') id: string, @Body() operationDto: WalletOperationDto): Promise<Transaction> {
+  debit(
+    @Param('id') id: string,
+    @Body() operationDto: WalletOperationDto,
+  ): Promise<Transaction> {
     return this.walletsService.debit(id, operationDto);
   }
 

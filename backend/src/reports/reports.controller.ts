@@ -1,4 +1,10 @@
-import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ReportsService } from './reports.service';
 import { ReportQueryDto } from './dto/report-query.dto';
@@ -19,7 +25,10 @@ export class ReportsController {
 
   @Get('dashboard-stats')
   @ApiOperation({ summary: 'Get overall dashboard statistics' })
-  @ApiResponse({ status: 200, description: 'Return overall dashboard statistics.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return overall dashboard statistics.',
+  })
   getDashboardStats() {
     return this.reportsService.getDashboardStats();
   }

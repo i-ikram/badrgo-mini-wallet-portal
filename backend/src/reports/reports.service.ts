@@ -65,7 +65,7 @@ export class ReportsService {
 
   async getDashboardStats() {
     const totalWallets = await this.prisma.wallet.count();
-    
+
     const balanceAggregation = await this.prisma.wallet.aggregate({
       _sum: {
         balance: true,
