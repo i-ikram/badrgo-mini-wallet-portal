@@ -2,7 +2,8 @@ import { Controller, Get, Post, Body, Param, UsePipes, ValidationPipe } from '@n
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
-import { Wallet } from '@prisma/client';
+import { WalletOperationDto } from './dto/wallet-operation.dto';
+import { Wallet, Transaction } from '@prisma/client';
 
 @ApiTags('wallets')
 @Controller('wallets')
@@ -26,5 +27,29 @@ export class WalletsController {
   @ApiResponse({ status: 404, description: 'Wallet not found.' })
   findOne(@Param('id') id: string): Promise<Wallet> {
     return this.walletsService.findOne(id);
+  }
+
+  @Post(':id/credit')
+  @ApiOperation({ summary: 'Credit funds to a wallet' })
+  @ApiParam({ name: 'id', description: 'Wallet ID' })
+  @ApiResponse({ status: 201, description: 'Wallet successfully credited, transaction recorded.' })
+  @ApiResponse({ status: 400, description: 'Invalid input or inactive wallet.' })
+  @ApiResponse({ status: 404, description: 'Wallet not found.' })
+  @ApiResponse({ status: 409, description: 'Idempotency key / Reference ID conflict.' })
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  credit(@Param('id') id: string, @Body() operationDto: WalletOperationDto): Promise<Transaction> {
+    return this.walletsService.credit(id, operationDto);
+  }
+
+  @Post(':id/debit')
+  @ApiOperation({ summary: 'Debit funds from a wallet' })
+  @ApiParam({ name: 'id', description: 'Wallet ID' })
+  @ApiResponse({ status: 201, description: 'Wallet successfully debited, transaction recorded.' })
+  @ApiResponse({ status: 400, description: 'Insufficient funds, invalid input, or inactive wallet.' })
+  @ApiResponse({ status: 404, description: 'Wallet not found.' })
+  @ApiResponse({ status: 409, description: 'Idempotency key / Reference ID conflict.' })
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  debit(@Param('id') id: string, @Body() operationDto: WalletOperationDto): Promise<Transaction> {
+    return this.walletsService.debit(id, operationDto);
   }
 }

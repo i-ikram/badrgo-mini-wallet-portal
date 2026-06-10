@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
-import { Wallet, WalletStatus } from '@prisma/client';
+import { WalletOperationDto } from './dto/wallet-operation.dto';
+import { Wallet, WalletStatus, Transaction, TransactionType } from '@prisma/client';
 
 @Injectable()
 export class WalletsService {
@@ -35,5 +36,114 @@ export class WalletsService {
     }
 
     return wallet;
+  }
+
+  /**
+   * Credits a wallet with the specified amount.
+   * Runs in a transaction to guarantee atomicity.
+   */
+  async credit(id: string, operationDto: WalletOperationDto): Promise<Transaction> {
+    const { amount, referenceId, description } = operationDto;
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Check idempotency (duplicate referenceId)
+      const existingTx = await tx.transaction.findUnique({
+        where: { referenceId },
+      });
+      if (existingTx) {
+        throw new ConflictException(`Transaction with reference ID ${referenceId} already exists`);
+      }
+
+      // 2. Fetch wallet and validate status
+      const wallet = await tx.wallet.findUnique({
+        where: { id },
+      });
+      if (!wallet) {
+        throw new NotFoundException(`Wallet with ID ${id} not found`);
+      }
+      if (wallet.status !== WalletStatus.ACTIVE) {
+        throw new BadRequestException('Cannot credit an inactive wallet');
+      }
+
+      // Money handling: safe integer arithmetic using minor units
+      const balanceBefore = wallet.balance;
+      const balanceAfter = balanceBefore + amount;
+
+      // 3. Update wallet balance
+      await tx.wallet.update({
+        where: { id },
+        data: { balance: balanceAfter },
+      });
+
+      // 4. Create transaction record
+      return tx.transaction.create({
+        data: {
+          walletId: id,
+          type: TransactionType.CREDIT,
+          amount,
+          balanceBefore,
+          balanceAfter,
+          referenceId,
+          description,
+        },
+      });
+    });
+  }
+
+  /**
+   * Debits a wallet with the specified amount.
+   * Runs in a transaction to guarantee atomicity and prevent overdrafts.
+   */
+  async debit(id: string, operationDto: WalletOperationDto): Promise<Transaction> {
+    const { amount, referenceId, description } = operationDto;
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Check idempotency (duplicate referenceId)
+      const existingTx = await tx.transaction.findUnique({
+        where: { referenceId },
+      });
+      if (existingTx) {
+        throw new ConflictException(`Transaction with reference ID ${referenceId} already exists`);
+      }
+
+      // 2. Fetch wallet and validate status
+      const wallet = await tx.wallet.findUnique({
+        where: { id },
+      });
+      if (!wallet) {
+        throw new NotFoundException(`Wallet with ID ${id} not found`);
+      }
+      if (wallet.status !== WalletStatus.ACTIVE) {
+        throw new BadRequestException('Cannot debit an inactive wallet');
+      }
+
+      // Business Rule: Wallet balance must never become negative
+      const balanceBefore = wallet.balance;
+      if (balanceBefore < amount) {
+        throw new BadRequestException('Insufficient funds');
+      }
+
+      // Money handling: safe integer arithmetic using minor units
+      const balanceAfter = balanceBefore - amount;
+
+      // 3. Update wallet balance
+      await tx.wallet.update({
+        where: { id },
+        data: { balance: balanceAfter },
+      });
+
+      // 4. Create transaction record
+      return tx.transaction.create({
+        data: {
+          walletId: id,
+          type: TransactionType.DEBIT,
+          amount,
+          balanceBefore,
+          balanceAfter,
+          referenceId,
+          description,
+        },
+      });
+    });
   }
 }
