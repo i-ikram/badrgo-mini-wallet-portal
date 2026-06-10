@@ -54,5 +54,20 @@ To run the integration and E2E tests:
    npm run test:e2e
    ```
 
+## Docker Setup (Run Full Stack)
+
+To run the entire full stack (PostgreSQL, Backend, and Frontend) inside Docker containers:
+
+1. **Build and start all services**:
+   At the root of the project:
+   ```bash
+   docker-compose up --build
+   ```
+
+2. **Access the portal**:
+   - Frontend UI: `http://localhost:3001`
+   - Backend APIs (Swagger Docs): `http://localhost:3000/docs`
+
+
 
 
