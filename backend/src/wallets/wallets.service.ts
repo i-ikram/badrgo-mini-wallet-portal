@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { WalletOperationDto } from './dto/wallet-operation.dto';
+import { GetTransactionsDto } from './dto/get-transactions.dto';
 import { Wallet, WalletStatus, Transaction, TransactionType } from '@prisma/client';
 
 @Injectable()
@@ -144,6 +145,24 @@ export class WalletsService {
           description,
         },
       });
+    });
+  }
+
+  /**
+   * Retrieves paginated transaction history for a wallet.
+   */
+  async findTransactions(id: string, query: GetTransactionsDto): Promise<Transaction[]> {
+    // Ensure wallet exists
+    await this.findOne(id);
+
+    const { page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    return this.prisma.transaction.findMany({
+      where: { walletId: id },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
     });
   }
 }

@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Param, UsePipes, ValidationPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, UsePipes, ValidationPipe, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { WalletOperationDto } from './dto/wallet-operation.dto';
+import { GetTransactionsDto } from './dto/get-transactions.dto';
 import { Wallet, Transaction } from '@prisma/client';
 
 @ApiTags('wallets')
@@ -51,5 +52,18 @@ export class WalletsController {
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   debit(@Param('id') id: string, @Body() operationDto: WalletOperationDto): Promise<Transaction> {
     return this.walletsService.debit(id, operationDto);
+  }
+
+  @Get(':id/transactions')
+  @ApiOperation({ summary: 'Get transaction history of a wallet' })
+  @ApiParam({ name: 'id', description: 'Wallet ID' })
+  @ApiResponse({ status: 200, description: 'Return transaction history.' })
+  @ApiResponse({ status: 404, description: 'Wallet not found.' })
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  findTransactions(
+    @Param('id') id: string,
+    @Query() query: GetTransactionsDto,
+  ): Promise<Transaction[]> {
+    return this.walletsService.findTransactions(id, query);
   }
 }
