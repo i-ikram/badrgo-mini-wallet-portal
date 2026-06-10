@@ -49,6 +49,14 @@ export interface DailySummary {
   activeWallets: number;
 }
 
+export interface DashboardStats {
+  totalWallets: number;
+  totalBalance: number; // in cents/minor units
+  totalCredits: number; // in cents/minor units
+  totalDebits: number; // in cents/minor units
+  transactionCount: number;
+}
+
 export const usersApi = {
   create: async (data: { name: string; phone: string; email: string }) => {
     const response = await apiClient.post<User>('/users', data);
@@ -67,6 +75,10 @@ export const walletsApi = {
   },
   get: async (id: string) => {
     const response = await apiClient.get<Wallet>(`/wallets/${id}`);
+    return response.data;
+  },
+  list: async () => {
+    const response = await apiClient.get<(Wallet & { user: { name: string; email: string } })[]>('/wallets');
     return response.data;
   },
   credit: async (id: string, data: { amount: number; referenceId: string; description?: string }) => {
@@ -90,6 +102,10 @@ export const reportsApi = {
     const response = await apiClient.get<DailySummary>('/reports/daily-summary', {
       params: date ? { date } : {},
     });
+    return response.data;
+  },
+  getDashboardStats: async () => {
+    const response = await apiClient.get<DashboardStats>('/reports/dashboard-stats');
     return response.data;
   },
 };

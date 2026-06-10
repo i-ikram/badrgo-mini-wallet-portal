@@ -16,4 +16,11 @@ export class ReportsController {
   getDailySummary(@Query() query: ReportQueryDto) {
     return this.reportsService.getDailySummary(query);
   }
+
+  @Get('dashboard-stats')
+  @ApiOperation({ summary: 'Get overall dashboard statistics' })
+  @ApiResponse({ status: 200, description: 'Return overall dashboard statistics.' })
+  getDashboardStats() {
+    return this.reportsService.getDashboardStats();
+  }
 }

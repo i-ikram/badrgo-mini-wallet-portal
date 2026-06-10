@@ -39,6 +39,20 @@ export class WalletsService {
     return wallet;
   }
 
+  async findAll(): Promise<Wallet[]> {
+    return this.prisma.wallet.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+  }
+
   /**
    * Credits a wallet with the specified amount.
    * Runs in a transaction to guarantee atomicity.

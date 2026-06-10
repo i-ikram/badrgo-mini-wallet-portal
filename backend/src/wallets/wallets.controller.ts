@@ -30,6 +30,13 @@ export class WalletsController {
     return this.walletsService.findOne(id);
   }
 
+  @Get()
+  @ApiOperation({ summary: 'Get list of all wallets' })
+  @ApiResponse({ status: 200, description: 'Return list of wallets.' })
+  findAll(): Promise<Wallet[]> {
+    return this.walletsService.findAll();
+  }
+
   @Post(':id/credit')
   @ApiOperation({ summary: 'Credit funds to a wallet' })
   @ApiParam({ name: 'id', description: 'Wallet ID' })

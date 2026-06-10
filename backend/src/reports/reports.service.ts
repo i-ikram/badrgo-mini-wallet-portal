@@ -62,4 +62,46 @@ export class ReportsService {
       activeWallets,
     };
   }
+
+  async getDashboardStats() {
+    const totalWallets = await this.prisma.wallet.count();
+    
+    const balanceAggregation = await this.prisma.wallet.aggregate({
+      _sum: {
+        balance: true,
+      },
+    });
+    const totalBalance = balanceAggregation._sum.balance ?? 0;
+
+    const txAggregation = await this.prisma.transaction.groupBy({
+      by: ['type'],
+      _sum: {
+        amount: true,
+      },
+      _count: {
+        id: true,
+      },
+    });
+
+    let totalCredits = 0;
+    let totalDebits = 0;
+    let transactionCount = 0;
+
+    for (const group of txAggregation) {
+      if (group.type === 'CREDIT') {
+        totalCredits = group._sum.amount ?? 0;
+      } else if (group.type === 'DEBIT') {
+        totalDebits = group._sum.amount ?? 0;
+      }
+      transactionCount += group._count.id;
+    }
+
+    return {
+      totalWallets,
+      totalBalance,
+      totalCredits,
+      totalDebits,
+      transactionCount,
+    };
+  }
 }
