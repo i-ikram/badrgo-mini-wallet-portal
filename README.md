@@ -22,3 +22,17 @@ To run migrations and set up the PostgreSQL database locally:
    npx prisma migrate dev --name init
    ```
 
+## Running Tests
+
+To run the integration and E2E tests:
+
+1. **Verify database is running**:
+   Ensure PostgreSQL container is started.
+
+2. **Execute backend E2E tests**:
+   Inside `/backend`:
+   ```bash
+   npm run test:e2e
+   ```
+
+
