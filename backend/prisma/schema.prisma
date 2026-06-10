@@ -1,0 +1,68 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum WalletStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  phone     String
+  email     String     @unique
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  wallets   Wallet[]
+
+  @@index([createdAt])
+}
+
+model Wallet {
+  id           String        @id @default(uuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  currency     String        @default("USD")
+  balance      Int           @default(0) // Integer minor units (e.g., cents) to prevent floating point issues.
+  status       WalletStatus  @default(ACTIVE)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Transaction {
+  id            String          @id @default(uuid())
+  walletId      String
+  wallet        Wallet          @relation(fields: [walletId], references: [id])
+  type          TransactionType
+  amount        Int             // Integer minor units
+  balanceBefore Int             // Integer minor units
+  balanceAfter  Int             // Integer minor units
+  referenceId   String          @unique
+  description   String?
+  createdAt     DateTime        @default(now())
+
+  @@index([walletId])
+  @@index([createdAt])
+  @@index([referenceId])
+}
