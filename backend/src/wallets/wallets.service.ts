@@ -47,7 +47,22 @@ export class WalletsService {
     const { amount, referenceId, description } = operationDto;
 
     return this.prisma.$transaction(async (tx) => {
-      // 1. Check idempotency (duplicate referenceId)
+      // CONCURRENCY CONTROL: Acquire exclusive row lock on the wallet in PostgreSQL.
+      // This prevents concurrent transactions from mutating the wallet balance simultaneously.
+      const wallets: Wallet[] = await tx.$queryRaw<Wallet[]>`
+        SELECT * FROM "Wallet" WHERE "id" = ${id} LIMIT 1 FOR UPDATE
+      `;
+      const wallet = wallets[0];
+
+      if (!wallet) {
+        throw new NotFoundException(`Wallet with ID ${id} not found`);
+      }
+
+      if (wallet.status !== WalletStatus.ACTIVE) {
+        throw new BadRequestException('Cannot credit an inactive wallet');
+      }
+
+      // IDEMPOTENCY: Check duplicate reference ID before applying the transaction.
       const existingTx = await tx.transaction.findUnique({
         where: { referenceId },
       });
@@ -55,28 +70,16 @@ export class WalletsService {
         throw new ConflictException(`Transaction with reference ID ${referenceId} already exists`);
       }
 
-      // 2. Fetch wallet and validate status
-      const wallet = await tx.wallet.findUnique({
-        where: { id },
-      });
-      if (!wallet) {
-        throw new NotFoundException(`Wallet with ID ${id} not found`);
-      }
-      if (wallet.status !== WalletStatus.ACTIVE) {
-        throw new BadRequestException('Cannot credit an inactive wallet');
-      }
-
-      // Money handling: safe integer arithmetic using minor units
+      // MONEY HANDLING: Avoid floating point errors.
+      // Use integer minor units (e.g., cents) for all arithmetic calculations.
       const balanceBefore = wallet.balance;
       const balanceAfter = balanceBefore + amount;
 
-      // 3. Update wallet balance
       await tx.wallet.update({
         where: { id },
         data: { balance: balanceAfter },
       });
 
-      // 4. Create transaction record
       return tx.transaction.create({
         data: {
           walletId: id,
@@ -99,7 +102,22 @@ export class WalletsService {
     const { amount, referenceId, description } = operationDto;
 
     return this.prisma.$transaction(async (tx) => {
-      // 1. Check idempotency (duplicate referenceId)
+      // CONCURRENCY CONTROL: Acquire exclusive row lock on the wallet in PostgreSQL.
+      // This prevents concurrent transactions from mutating the wallet balance simultaneously.
+      const wallets: Wallet[] = await tx.$queryRaw<Wallet[]>`
+        SELECT * FROM "Wallet" WHERE "id" = ${id} LIMIT 1 FOR UPDATE
+      `;
+      const wallet = wallets[0];
+
+      if (!wallet) {
+        throw new NotFoundException(`Wallet with ID ${id} not found`);
+      }
+
+      if (wallet.status !== WalletStatus.ACTIVE) {
+        throw new BadRequestException('Cannot debit an inactive wallet');
+      }
+
+      // IDEMPOTENCY: Check duplicate reference ID before applying the transaction.
       const existingTx = await tx.transaction.findUnique({
         where: { referenceId },
       });
@@ -107,33 +125,21 @@ export class WalletsService {
         throw new ConflictException(`Transaction with reference ID ${referenceId} already exists`);
       }
 
-      // 2. Fetch wallet and validate status
-      const wallet = await tx.wallet.findUnique({
-        where: { id },
-      });
-      if (!wallet) {
-        throw new NotFoundException(`Wallet with ID ${id} not found`);
-      }
-      if (wallet.status !== WalletStatus.ACTIVE) {
-        throw new BadRequestException('Cannot debit an inactive wallet');
-      }
-
-      // Business Rule: Wallet balance must never become negative
+      // BUSINESS RULE: Prevent overdraft (balance cannot become negative).
       const balanceBefore = wallet.balance;
       if (balanceBefore < amount) {
         throw new BadRequestException('Insufficient funds');
       }
 
-      // Money handling: safe integer arithmetic using minor units
+      // MONEY HANDLING: Avoid floating point errors.
+      // Use integer minor units (e.g., cents) for all arithmetic calculations.
       const balanceAfter = balanceBefore - amount;
 
-      // 3. Update wallet balance
       await tx.wallet.update({
         where: { id },
         data: { balance: balanceAfter },
       });
 
-      // 4. Create transaction record
       return tx.transaction.create({
         data: {
           walletId: id,
