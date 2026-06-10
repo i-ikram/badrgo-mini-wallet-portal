@@ -1,0 +1,16 @@
+{
+  "name": "mini-operations-wallet-portal-root",
+  "private": true,
+  "scripts": {
+    "backend:install": "npm --prefix backend install",
+    "backend:build": "npm --prefix backend run build",
+    "backend:start": "npm --prefix backend run start",
+    "backend:dev": "npm --prefix backend run start:dev",
+    "backend:test:e2e": "npm --prefix backend run test:e2e",
+    "backend:migrate": "npx --prefix backend prisma migrate dev",
+    "frontend:install": "npm --prefix frontend install",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:start": "npm --prefix frontend run start"
+  }
+}

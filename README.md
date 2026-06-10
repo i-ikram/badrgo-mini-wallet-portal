@@ -17,10 +17,25 @@ To run migrations and set up the PostgreSQL database locally:
    ```
 
 2. **Run Prisma Migrations**:
-   Inside `/backend`:
+   You can run migrations from the root folder:
+   ```bash
+   npm run backend:migrate
+   ```
+   Or inside `/backend`:
    ```bash
    npx prisma migrate dev --name init
    ```
+
+## Running the Backend
+
+You can start the backend from the root folder:
+```bash
+npm run backend:dev
+```
+Or inside `/backend`:
+```bash
+npm run start:dev
+```
 
 ## Running Tests
 
@@ -30,9 +45,14 @@ To run the integration and E2E tests:
    Ensure PostgreSQL container is started.
 
 2. **Execute backend E2E tests**:
-   Inside `/backend`:
+   From the root folder:
+   ```bash
+   npm run backend:test:e2e
+   ```
+   Or inside `/backend`:
    ```bash
    npm run test:e2e
    ```
+
 
 
