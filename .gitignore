@@ -37,7 +37,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Database/Prisma
-/backend/prisma/migrations/
 /backend/prisma/*.db
 
 # OS files

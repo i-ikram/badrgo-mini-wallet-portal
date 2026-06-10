@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mini Operations Wallet Portal",
-  description: "Badrgo Financial Control & Admin Portal",
+  title: "Mini Operations Wallet Portal — Badrgo",
+  description: "Badrgo Financial Control & Admin Portal for wallet operations, transactions, and daily reconciliation.",
 };
 
 export default function RootLayout({
@@ -25,11 +25,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${geistSans.variable} ${geistMono.variable} h-full antialiased bg-slate-50/50 text-slate-900`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} h-full antialiased bg-[var(--background)] text-[var(--foreground)]`}>
         <div className="flex h-screen overflow-hidden">
           <Sidebar />
           <div className="flex-1 flex flex-col overflow-y-auto">
-            <main className="p-8 max-w-7xl w-full mx-auto">
+            {/* Top accent line */}
+            <div className="h-0.5 bg-gradient-to-r from-brand-600 via-purple-500 to-brand-500 shrink-0" />
+            <main className="flex-1 p-6 lg:p-8 max-w-[1400px] w-full mx-auto animate-fade-in">
               {children}
             </main>
           </div>

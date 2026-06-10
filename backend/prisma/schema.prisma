@@ -66,3 +66,11 @@ model Transaction {
   @@index([createdAt])
   @@index([referenceId])
 }
+
+model DailySummary {
+  date             DateTime @id
+  totalCredits     Int      @default(0) // Integer minor units
+  totalDebits      Int      @default(0) // Integer minor units
+  transactionCount Int      @default(0)
+  activeWallets    Int      @default(0)
+}
