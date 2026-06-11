@@ -1,10 +1,10 @@
 # Mini Operations Wallet Portal
 
-A production-quality full-stack wallet operations portal built as a hiring assessment for Badrgo. This system serves as a financial control area similar to those used internally in ride-hailing or delivery platforms to monitor users, manage active wallets, and oversee ledger events.
+This system serves as a financial control area similar to those used internally in ride-hailing or delivery platforms to monitor users, manage active wallets, and oversee ledger events.
 
 ---
 
-## 🚀 Tech Stack
+## Tech Stack
 
 - **Backend**: NestJS (v11) - modular, type-safe backend framework
 - **Database**: PostgreSQL (v15) - relational database engine
@@ -18,7 +18,7 @@ A production-quality full-stack wallet operations portal built as a hiring asses
 
 ---
 
-## 🏛 Architecture Overview
+## Architecture Overview
 
 The codebase is organized as a monorepo consisting of:
 - **`/backend`**: Encapsulates the REST API using a clean NestJS module structure. It implements a Layered Architecture separating routers (`Controllers`), business logic (`Services`), data structures (`DTOs`), and data access (`Prisma`).
@@ -57,7 +57,7 @@ graph TD
 
 ---
 
-## 🔐 Environment Variables
+## Environment Variables
 
 A `.env` or `.env.example` file at the root contains:
 ```env
@@ -78,7 +78,7 @@ PORT_FRONTEND=3001
 
 ---
 
-## ⚙️ Local Setup & Commands
+## Local Setup & Commands
 
 You can control both applications directly from the workspace root using the following prefix-delegated scripts:
 
@@ -130,7 +130,7 @@ This launches:
 
 ---
 
-## 💼 Critical Business Rules & Explanations
+## Critical Business Rules & Explanations
 
 ### 1. Money Handling
 - **Rule**: Float operations in JavaScript are prone to binary rounding errors (e.g. `0.1 + 0.2 === 0.30000000000000004`).
@@ -157,7 +157,7 @@ This launches:
 
 ---
 
-## 📑 API Endpoints Summary
+## API Endpoints Summary
 
 - **POST `/users`** : Register a platform user. Throws `409` if email is duplicated.
 - **GET `/users`** : List all registered users.
@@ -171,7 +171,7 @@ This launches:
 
 ---
 
-## 🎨 Frontend Portal Views
+## Frontend Portal Views
 
 1. **Dashboard**: Shows metrics (Total Wallets, System Balance, Total Credits/Debits, Events) and a list of all wallets, including a quick-form to open a wallet for any user.
 2. **Users**: Control page to register new accounts and list existing ones.
@@ -180,26 +180,26 @@ This launches:
 
 ---
 
-## 🧪 Manual Frontend Test Checklist
+## Manual Frontend Test Checklist
 
-- [ ] **Create User**: Open `http://localhost:3001/users`, type name, phone, and unique email. Submit, verify the new user card appears in the grid.
-- [ ] **Create Duplicate User**: Attempt to register with the same email. Verify a clean error alert appears.
-- [ ] **Create Wallet**: Go to Dashboard (`/`), select the newly created user in the dropdown, choose currency, and click "Create". Verify the wallet appears in the ledger list.
-- [ ] **Credit Wallet**: Click "Details" next to the new wallet. Click "Generate Ref" to fill a unique reference code, type `50.00` in the amount input, and click "Credit Wallet". Verify the balance increases to `$50.00` and a credit event is logged below.
-- [ ] **Duplicate Credit (Idempotency)**: Without changing the reference ID, click "Credit Wallet" again. Verify a `409 Conflict` error alert appears and the balance remains at `$50.00`.
-- [ ] **Debit Wallet**: Type `20.00` in the amount input, click "Generate Ref", and click "Debit Wallet". Verify balance drops to `$30.00` and a debit transaction is logged.
-- [ ] **Overdraft Prevention**: Click "Generate Ref", type `40.00` (which is > `$30.00`), and click "Debit Wallet". Verify an "Insufficient funds" error is displayed and the balance remains at `$30.00`.
-- [ ] **Daily Report**: Go to Reports `/reports`. Select today's date. Verify that the sum of credits ($50.00), debits ($20.00), cash flow ($30.00), transaction count (2), and active wallets (1) are accurately displayed.
+- **Create User**: Open `http://localhost:3001/users`, type name, phone, and unique email. Submit, verify the new user card appears in the grid.
+- **Create Duplicate User**: Attempt to register with the same email. Verify a clean error alert appears.
+- **Create Wallet**: Go to Dashboard (`/`), select the newly created user in the dropdown, choose currency, and click "Create". Verify the wallet appears in the ledger list.
+- **Credit Wallet**: Click "Details" next to the new wallet. Click "Generate Ref" to fill a unique reference code, type `50.00` in the amount input, and click "Credit Wallet". Verify the balance increases to `$50.00` and a credit event is logged below.
+- **Duplicate Credit (Idempotency)**: Without changing the reference ID, click "Credit Wallet" again. Verify a `409 Conflict` error alert appears and the balance remains at `$50.00`.
+- **Debit Wallet**: Type `20.00` in the amount input, click "Generate Ref", and click "Debit Wallet". Verify balance drops to `$30.00` and a debit transaction is logged.
+- **Overdraft Prevention**: Click "Generate Ref", type `40.00` (which is > `$30.00`), and click "Debit Wallet". Verify an "Insufficient funds" error is displayed and the balance remains at `$30.00`.
+- **Daily Report**: Go to Reports `/reports`. Select today's date. Verify that the sum of credits ($50.00), debits ($20.00), cash flow ($30.00), transaction count (2), and active wallets (1) are accurately displayed.
 
 ---
 
-## ⚠️ Known Limitations
+## Known Limitations
 
 1. **Single Currency Aggregations**: The daily report sums amounts directly. If the system supports multiple currencies (e.g. USD, EUR), sums will mix values. Currently, the daily report assumes a single-currency environment (defaulting all wallets to USD) for aggregate correctness. In a multi-currency production environment, groupings by currency are required.
 2. **No User Authentication**: For assessment simplicity, there is no Auth token mechanism. Users are selected and managed openly.
 
 ---
 
-## 🤖 AI Usage Disclosure
+## AI Usage Disclosure
 
 AI tools were used as an assistant for planning, architecture review, README wording, and checking edge cases around wallet idempotency and concurrent debit handling. The implementation decisions, database schema, service logic, validation rules, and final testing were manually reviewed and adapted for this assessment. I understand the code and can explain or modify it live.

@@ -24,7 +24,6 @@ export class WalletsService {
   ) {}
 
   async create(createWalletDto: CreateWalletDto): Promise<Wallet> {
-    // Validate that the user exists (will throw NotFoundException if not found)
     await this.usersService.findOne(createWalletDto.userId);
 
     return this.prisma.wallet.create({
@@ -63,10 +62,7 @@ export class WalletsService {
     });
   }
 
-  /**
-   * Credits a wallet with the specified amount.
-   * Runs in a transaction to guarantee atomicity.
-   */
+  
   async credit(
     id: string,
     operationDto: WalletOperationDto,
@@ -74,8 +70,6 @@ export class WalletsService {
     const { amount, referenceId, description } = operationDto;
 
     return this.prisma.$transaction(async (tx) => {
-      // CONCURRENCY CONTROL: Acquire exclusive row lock on the wallet in PostgreSQL.
-      // This prevents concurrent transactions from mutating the wallet balance simultaneously.
       const wallets: Wallet[] = await tx.$queryRaw<Wallet[]>`
         SELECT * FROM "Wallet" WHERE "id" = ${id} LIMIT 1 FOR UPDATE
       `;
@@ -89,7 +83,6 @@ export class WalletsService {
         throw new BadRequestException('Cannot credit an inactive wallet');
       }
 
-      // IDEMPOTENCY: Check duplicate reference ID before applying the transaction.
       const existingTx = await tx.transaction.findUnique({
         where: { referenceId },
       });
@@ -99,8 +92,6 @@ export class WalletsService {
         );
       }
 
-      // MONEY HANDLING: Avoid floating point errors.
-      // Use integer minor units (e.g., cents) for all arithmetic calculations.
       const balanceBefore = wallet.balance;
       const balanceAfter = balanceBefore + amount;
 
@@ -123,10 +114,7 @@ export class WalletsService {
     });
   }
 
-  /**
-   * Debits a wallet with the specified amount.
-   * Runs in a transaction to guarantee atomicity and prevent overdrafts.
-   */
+  
   async debit(
     id: string,
     operationDto: WalletOperationDto,
@@ -134,8 +122,6 @@ export class WalletsService {
     const { amount, referenceId, description } = operationDto;
 
     return this.prisma.$transaction(async (tx) => {
-      // CONCURRENCY CONTROL: Acquire exclusive row lock on the wallet in PostgreSQL.
-      // This prevents concurrent transactions from mutating the wallet balance simultaneously.
       const wallets: Wallet[] = await tx.$queryRaw<Wallet[]>`
         SELECT * FROM "Wallet" WHERE "id" = ${id} LIMIT 1 FOR UPDATE
       `;
@@ -149,7 +135,6 @@ export class WalletsService {
         throw new BadRequestException('Cannot debit an inactive wallet');
       }
 
-      // IDEMPOTENCY: Check duplicate reference ID before applying the transaction.
       const existingTx = await tx.transaction.findUnique({
         where: { referenceId },
       });
@@ -159,14 +144,11 @@ export class WalletsService {
         );
       }
 
-      // BUSINESS RULE: Prevent overdraft (balance cannot become negative).
       const balanceBefore = wallet.balance;
       if (balanceBefore < amount) {
         throw new BadRequestException('Insufficient funds');
       }
 
-      // MONEY HANDLING: Avoid floating point errors.
-      // Use integer minor units (e.g., cents) for all arithmetic calculations.
       const balanceAfter = balanceBefore - amount;
 
       await tx.wallet.update({
@@ -188,14 +170,11 @@ export class WalletsService {
     });
   }
 
-  /**
-   * Retrieves paginated transaction history for a wallet.
-   */
+  
   async findTransactions(
     id: string,
     query: GetTransactionsDto,
   ): Promise<Transaction[]> {
-    // Ensure wallet exists
     await this.findOne(id);
 
     const { page = 1, limit = 10 } = query;

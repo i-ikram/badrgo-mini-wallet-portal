@@ -6,10 +6,9 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS
+  
   app.enableCors();
 
-  // Use global validation pipes
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -17,7 +16,6 @@ async function bootstrap() {
     }),
   );
 
-  // Swagger setup
   const config = new DocumentBuilder()
     .setTitle('Mini Operations Wallet Portal API')
     .setDescription(

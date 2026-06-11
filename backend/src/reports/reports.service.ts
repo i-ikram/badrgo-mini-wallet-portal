@@ -11,7 +11,6 @@ export class ReportsService {
     const start = new Date(`${dateStr}T00:00:00.000Z`);
     const end = new Date(`${dateStr}T23:59:59.999Z`);
 
-    // Aggregate totals from transaction table using efficient groupBy
     const aggregations = await this.prisma.transaction.groupBy({
       by: ['type'],
       where: {
@@ -41,7 +40,6 @@ export class ReportsService {
       transactionCount += group._count.id;
     }
 
-    // Aggregate unique active wallets having transactions on that day
     const walletAggregations = await this.prisma.transaction.groupBy({
       by: ['walletId'],
       where: {
